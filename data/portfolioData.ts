@@ -315,3 +315,30 @@ export const demoProjects: Project[] = [
         metrics: "Increased wide-area network data transfer efficiency by 35%"
     }
 ];
+
+
+// Append this to src/data/portfolioData.ts
+
+export interface FAQItem {
+    question: string;
+    answer: string;
+}
+
+export const faqData: FAQItem[] = [
+    {
+        question: "As a Core Network Specialist, what is your approach to multi-vendor integration?",
+        answer: "My approach focuses heavily on open-standard routing protocols like OSPF and BGP rather than proprietary variants. For instance, when bridging MikroTik RouterOS with Cisco IOS or Juniper devices, I enforce strict interface parameter matching, careful MTU calculations, and explicit administrative distance mapping to guarantee loop-free mutual route redistribution and seamless data-plane forwarding."
+    },
+    {
+        question: "How do you optimize subscriber bandwidth environments on MikroTik systems during peak hours?",
+        answer: "Instead of relying purely on simple queues which scale poorly under thousands of concurrent active connections, I implement PCQ (Per Connection Queue) inside structured Queue Trees. By using Mangle rules to classify and mark distinct traffic types (prioritizing real-time TCP/UDP streams like DNS, VoIP, and gaming protocols over bulk HTTP downloads), the router automatically shares the global bandwidth pool equally among active subscribers, preventing network starvation."
+    },
+    {
+        question: "How do your Full-Stack development skills tie into your System Engineering background?",
+        answer: "I practice NetDevOps. By combining my full-stack MERN capabilities and Python scripting with core networking, I build tools that automate infrastructure pipelines. This includes developing custom scripts using Netmiko/Ansible to automate bulk device configurations, parsing complex syslog data into centralized tracking dashboards, and building secure web interfaces that interface directly with network router APIs."
+    },
+    {
+        question: "What is your baseline strategy for hardening an enterprise network perimeter?",
+        answer: "I enforce a Zero-Trust architecture model. This requires disabling all unused physical interface ports, applying strict Spanning Tree protection constraints (BPDU Guard, Root Guard), configuring stateful Layer 4 firewall inspection filtering rules, separating internal corporate departments via isolated Layer 3 VLAN boundaries, and requiring cryptographically secured IPsec/WireGuard VPN paths for all remote access."
+    }
+];

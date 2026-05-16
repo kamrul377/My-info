@@ -4,6 +4,7 @@ import Hero from "@/components/Hero";
 import Projects from "@/components/Projects";
 import Experience from "@/components/Experience";
 import ThemeToggle from "@/components/ThemeToggle"; // <-- Import Button
+import FAQ from "@/components/FAQ";
 
 export default function Home() {
   return (
@@ -11,6 +12,7 @@ export default function Home() {
       <Hero />
       <Projects />
       <Experience />
+      <FAQ />
       <ThemeToggle /> {/* <-- Mount Button Here */}
     </main>
   );
