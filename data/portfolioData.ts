@@ -1,49 +1,4 @@
 
-
-// export const personalInfo = {
-//     name: "Kamrul Islam",
-//     role: "System Engineer & Full-Stack Developer",
-//     avatar: "./km.jpeg", // Placeholder: replace with your image asset path once local
-//     bio: "A multi-disciplinary Core Network Specialist running infrastructure operations at First n Fast IT Ltd. Bridging the gap between hardware engineering and software systems by building enterprise MERN solutions, writing network automation engines, and deeply exploring cybersecurity analytics.",
-
-//     skillCategories: [
-//         {
-//             title: "Core MikroTik Routing & Switching",
-//             skills: ["RouterOS Core Configuration", "OSPF & iBGP/eBGP Peering", "PPPoE Server Deployment", "VLAN (802.1Q) Layer-2 Isolation"]
-//         },
-//         {
-//             title: "MikroTik Traffic & Bandwidth Engineering",
-//             skills: ["Queue Trees & Simple Queues", "PCQ (Per Connection Queue) Shaping", "Mangle & Firewall Marking", "Dual-WAN Load Balancing (PCC)"]
-//         },
-//         {
-//             title: "Core Networking & Firewalls",
-//             skills: ["Cisco & Juniper Routing/Switching", "Fortigate Firewall Compliance", "Multi-Vendor Troubleshooting", "Infrastructure Optimization"]
-//         },
-//         {
-//             title: "Security & Automation",
-//             skills: ["Ethical Hacking", "Cybersecurity Analytics", "Python Automation Scripts", "Linux Systems"]
-//         },
-//         {
-//             title: "Core Networking & Firewalls",
-//             skills: ["Cisco & Juniper Routing/Switching", "Fortigate Firewall", "Multi-Vendor Troubleshooting", "Core Infrastructure Optimization"]
-//         },
-//         {
-//             title: "Network Certifications",
-//             skills: ["CCNA", "MTCNA", "MTCRE", "MTCSE"]
-//         },
-//         {
-//             title: "Full-Stack Software Engineering",
-//             skills: ["HTML5 / CSS3 / Tailwind", "JavaScript (ES6+)", "Node.js / Express / REST APIs", "Python", "Java", "C / C++"]
-//         },
-//         {
-//             title: "Security & Automation",
-//             skills: ["Ethical Hacking", "Cybersecurity Analytics", "Network Automation Scripts", "Linux Systems"]
-//         }
-//     ],
-//     github: "https://github.com/kamrul377", // Your actual GitHub base mapping
-//     linkedin: "https://linkedin.com/in/kamrulislam377", // Your actual LinkedIn identity
-//     email: "your.email@example.com",
-// };
 export const personalInfo = {
     name: "Kamrul Islam",
     role: "System Engineer & Full-Stack Developer",
