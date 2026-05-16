@@ -136,6 +136,11 @@ export const education = [
         degree: "Computer Science & Technology",
         institution: "Chattogram Polytechnic Institute",
         period: "2019 - 2023",
+    },
+    {
+        degree: "Science",
+        institution: "Banigram Sadhanpur High School",
+        period: "2017 - 2019",
     }
 ];
 
