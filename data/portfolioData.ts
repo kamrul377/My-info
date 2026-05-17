@@ -2,7 +2,7 @@
 export const personalInfo = {
     name: "Kamrul Islam",
     role: "System Engineer & Full-Stack Developer",
-    avatar: "/my-profile-pic.jpg", // Kept matching your root public image layout configuration
+    avatar: "/my-profile-pic.jpg",
     bio: "A multi-disciplinary Core Network Specialist running infrastructure operations at First n Fast IT Ltd. Bridging the gap between hardware engineering and software systems by building enterprise MERN solutions, writing network automation engines, and deeply exploring cybersecurity analytics.",
 
     skillCategories: [
@@ -63,7 +63,7 @@ export const personalInfo = {
     ],
     github: "https://github.com/kamrul377",
     linkedin: "https://www.linkedin.com/in/kamrulislam377/",
-    email: "kamrul.cse9@gmail.com", // Remember to swap this with your live business email handle!
+    email: "kamrul.cse9@gmail.com",
 };
 
 export const experiences = [
@@ -114,7 +114,7 @@ export interface Project {
 }
 
 export const demoProjects: Project[] = [
-    // Append this to the demoProjects array inside src/data/portfolioData.ts
+
 
     {
         id: "mikrotik-isp-core",
@@ -181,7 +181,7 @@ export const demoProjects: Project[] = [
         ],
         metrics: "Maintained structural stability through full 1M+ global route table table feeds"
     },
-    // Add these to the existing demoProjects array in src/data/portfolioData.ts
+
 
     {
         id: "mpls-vpn-backbone",
@@ -277,7 +277,6 @@ export const demoProjects: Project[] = [
 ];
 
 
-// Append this to src/data/portfolioData.ts
 
 export interface FAQItem {
     question: string;
@@ -301,4 +300,60 @@ export const faqData: FAQItem[] = [
         question: "What is your baseline strategy for hardening an enterprise network perimeter?",
         answer: "I enforce a Zero-Trust architecture model. This requires disabling all unused physical interface ports, applying strict Spanning Tree protection constraints (BPDU Guard, Root Guard), configuring stateful Layer 4 firewall inspection filtering rules, separating internal corporate departments via isolated Layer 3 VLAN boundaries, and requiring cryptographically secured IPsec/WireGuard VPN paths for all remote access."
     }
+];
+
+
+// Append this to src/data/portfolioData.ts
+
+export interface Certificate {
+    id: string;
+    title: string;
+    issuer: string;
+    image: string; // The local file path or web link to your certificate photo
+    badgeColor: string;
+}
+
+export const certificatesData: Certificate[] = [
+    // {
+    //     id: "ccna",
+    //     title: "CCNA (Cisco Certified Network Associate)",
+    //     issuer: "Cisco Systems",
+    //     image: "./html.jpg", // 👈 Save your images inside public/certificates/ folder
+    //     badgeColor: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 border-blue-100 dark:border-blue-900/40"
+    // },
+    {
+        id: "mtcna",
+        title: "MTCNA (MikroTik Certified Network Associate)",
+        issuer: "MikroTik",
+        image: "./MTCNA.jpg",
+        badgeColor: "bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400 border-teal-100 dark:border-teal-900/40"
+    },
+    {
+        id: "mtcre",
+        title: "MTCRE (MikroTik Certified Routing Engineer)",
+        issuer: "MikroTik",
+        image: "/MTCRE.jpg",
+        badgeColor: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border-purple-100 dark:border-purple-900/40"
+    },
+    {
+        id: "mtcse",
+        title: "MTCSE (MikroTik Certified Security Engineer)",
+        issuer: "MikroTik",
+        image: "/MTCSE.jpg",
+        badgeColor: "bg-pink-50 text-pink-600 dark:bg-pink-950/40 dark:text-pink-400 border-pink-100 dark:border-pink-900/40"
+    },
+    // {
+    //     id: "html-css",
+    //     title: "HTML - CSS",
+    //     issuer: "HTML-CSS",
+    //     image: "/html.jpg",
+    //     badgeColor: "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 border-rose-100 dark:border-rose-900/40"
+    // },
+    // {
+    //     id: "git",
+    //     title: "Git & Github",
+    //     issuer: "Git & Github",
+    //     image: "/git.jpg",
+    //     badgeColor: "bg-violet-50  text-violet-600 dark:bg-violet-950/40 dark:text-violet-400 border-violet-100 dark:border-violet-900/40"
+    // }
 ];
