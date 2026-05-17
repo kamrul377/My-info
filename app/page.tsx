@@ -13,7 +13,7 @@ export default function Home() {
       <Hero />
       <Projects />
       <Experience />
-      <Certificates />
+      {/* <Certificates /> */}
       <FAQ />
       <ThemeToggle /> {/* <-- Mount Button Here */}
     </main>
