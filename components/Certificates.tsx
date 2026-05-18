@@ -3,11 +3,20 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { certificatesData } from "@/data/portfolioData";
-import { Award, ChevronLeft, ChevronRight, MonitorMobile } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+
+interface CertificateItem {
+    id: string;
+    title: string;
+    issuer: string;
+    image: string;
+    badgeColor?: string;
+}
 
 export default function Certificates() {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [direction, setDirection] = useState(0); // -1 for left, 1 for right
+    const [direction, setDirection] = useState(0);
 
     const slideVariants = {
         enter: (direction: number) => ({
@@ -43,7 +52,10 @@ export default function Certificates() {
         );
     };
 
-    const currentCert = certificatesData[currentIndex];
+
+    const currentCert = certificatesData[currentIndex] as CertificateItem;
+
+    if (!currentCert) return null; // সেফটি গার্ড চেক
 
     return (
         <section id="certificates" className="py-24 px-6 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 border-t border-slate-200/50 dark:border-slate-800/50">
@@ -90,7 +102,7 @@ export default function Certificates() {
                         {/* Meta Text Display */}
                         <div className="mt-6 text-center space-y-2">
                             <div className="inline-flex items-center justify-center mx-auto">
-                                <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border ${currentCert.badgeColor}`}>
+                                <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border ${currentCert.badgeColor || 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 border-blue-100'}`}>
                                     {currentCert.issuer}
                                 </span>
                             </div>
