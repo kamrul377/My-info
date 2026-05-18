@@ -1,11 +1,11 @@
 // src/components/Certificates.tsx
 "use client"
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { certificatesData } from "@/data/portfolioData";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-
+// টাইপস্ক্রিপ্টের জন্য ডাটা স্ট্রাকচার ইন্টারফেস
 interface CertificateItem {
     id: string;
     title: string;
@@ -16,9 +16,10 @@ interface CertificateItem {
 
 export default function Certificates() {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [direction, setDirection] = useState(0);
+    const [direction, setDirection] = useState(0); // -1 for left, 1 for right
 
-    const slideVariants = {
+    // Variants টাইপ স্পষ্টভাবে বলে দেওয়ার কারণে প্রোডাকশন বিল্ডে আর Easing এরর আসবে না
+    const slideVariants: Variants = {
         enter: (direction: number) => ({
             x: direction > 0 ? 150 : -150,
             opacity: 0,
@@ -52,7 +53,7 @@ export default function Certificates() {
         );
     };
 
-
+    // ডেটা অবজেক্টকে টাইপ কাস্টিং করা হলো সেফটির জন্য
     const currentCert = certificatesData[currentIndex] as CertificateItem;
 
     if (!currentCert) return null; // সেফটি গার্ড চেক
@@ -175,3 +176,4 @@ export default function Certificates() {
         </section>
     );
 }
+
