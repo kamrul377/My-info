@@ -1,4 +1,4 @@
-// // src/lib/db.ts
+// src/lib/db.ts
 // import mysql from 'mysql2/promise';
 
 // export const dbPool = mysql.createPool({
@@ -11,7 +11,7 @@
 //     queueLimit: 0,
 // });
 
-// src/lib/db.ts
+// src / lib / db.ts
 import mysql from 'mysql2/promise';
 
 export const dbPool = mysql.createPool({
