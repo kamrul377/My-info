@@ -1,9 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Terminal, Database, Trash2, Edit3, EyeOff, Play, Upload, RefreshCw, AlertCircle, CheckCircle2, ChevronRight, LayoutDashboard, DatabaseZap } from "lucide-react";
+import { Terminal, Database, Trash2, Edit3, EyeOff, Play, Upload, RefreshCw, AlertCircle, CheckCircle2, ChevronRight, LayoutDashboard, DatabaseZap, Lock, KeyRound } from "lucide-react";
 
 export default function ServerManagementPage() {
+    // 🔒 Auth States
+    const [password, setPassword] = useState("");
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [authError, setAuthError] = useState("");
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Prevents flash of login screen
+
+    // 🖥️ Core Dashboard States
     const [activeTable, setActiveTable] = useState("posts");
     const [tableData, setTableData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -13,7 +20,29 @@ export default function ServerManagementPage() {
     const [successMessage, setSuccessMessage] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // ⏳ Check LocalStorage Session on Mount
+    useEffect(() => {
+        const cachedAuth = localStorage.getItem("server_auth");
+        const authTimestamp = localStorage.getItem("server_auth_time");
+
+        if (cachedAuth === "true" && authTimestamp) {
+            const currentTime = new Date().getTime();
+            const threeHours = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+
+            if (currentTime - parseInt(authTimestamp) < threeHours) {
+                setIsAuthenticated(true);
+            } else {
+                // Session expired, clean up
+                localStorage.removeItem("server_auth");
+                localStorage.removeItem("server_auth_time");
+            }
+        }
+        setIsCheckingAuth(false);
+    }, []);
+
+    // Fetch implementation
     const fetchTableData = async (tableName: string) => {
+        if (!isAuthenticated) return;
         setLoading(true);
         try {
             const res = await fetch("/api/admin/sql", {
@@ -32,9 +61,28 @@ export default function ServerManagementPage() {
         }
     };
 
+    // Watch for active table updates only after auth passes
     useEffect(() => {
-        fetchTableData(activeTable);
-    }, [activeTable]);
+        if (isAuthenticated) {
+            fetchTableData(activeTable);
+        }
+    }, [activeTable, isAuthenticated]);
+
+    // Handle Password Verification & Save Session
+    const handleAuthSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (password === "kamrul.cse") {
+            const now = new Date().getTime();
+            localStorage.setItem("server_auth", "true");
+            localStorage.setItem("server_auth_time", now.toString());
+
+            setIsAuthenticated(true);
+            setAuthError("");
+        } else {
+            setAuthError("Access Denied: Invalid Security Signature.");
+            setPassword("");
+        }
+    };
 
     const handleExecuteSQL = async (queryToRun = sqlQuery) => {
         if (!queryToRun.trim()) {
@@ -90,20 +138,85 @@ export default function ServerManagementPage() {
         if (query) await handleExecuteSQL(query);
     };
 
-    // Updated helper function to stop dropping critical content columns
     const getKeys = (data: any[]) => {
         if (!data || data.length === 0) return ["id", "payload"];
-
         const allKeys = Object.keys(data[0]);
-        // Fields we explicitly want to find and project onto our table UI layout
         const targetedFields = ["id", "content", "text", "username", "image_url", "status", "created_at"];
-
         const filteredKeys = allKeys.filter(key => targetedFields.includes(key));
-
-        // Dynamic fallback step: if none of our preferred target keys match, render the first 4 columns
         return filteredKeys.length > 1 ? filteredKeys : allKeys.slice(0, 4);
     };
 
+    // ─── LOADING STATE WHILE CHECKING CACHED AUTH ───
+    if (isCheckingAuth) {
+        return (
+            <div className="min-h-screen !bg-gray-950 !text-gray-100 flex items-center justify-center font-mono text-xs text-gray-500">
+                Checking local security state token...
+            </div>
+        );
+    }
+
+    // ─── RENDERING THE PASSWORD GATE OVERLAY IF NOT AUTHENTICATED ───
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen !bg-gray-950 !text-gray-100 flex items-center justify-center p-4 font-sans antialiased relative overflow-hidden">
+                {/* Background Hyper-Glow */}
+                <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
+                <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+
+                <div className="max-w-md w-full relative z-10 !bg-gray-900/40 border border-gray-800/80 p-8 rounded-2xl backdrop-blur-xl shadow-2xl space-y-6 text-center">
+                    <div className="mx-auto w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/10 border border-indigo-400/20">
+                        <Lock className="text-white" size={24} />
+                    </div>
+
+                    <div>
+                        <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text !text-transparent">
+                            Infrastructure Node Locked
+                        </h1>
+                        <p className="text-xs !text-gray-400 mt-1">
+                            Provide structural identity payload to establish control channel pipeline.
+                        </p>
+                    </div>
+
+                    <form onSubmit={handleAuthSubmit} className="space-y-4 text-left">
+                        <div className="space-y-2">
+                            <label className="text-[10px] uppercase font-bold tracking-wider !text-gray-400 block">Access Key Signature</label>
+                            <div className="relative">
+                                <KeyRound className="absolute left-4 top-3.5 !text-gray-500" size={14} />
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••••••"
+                                    className="w-full !bg-gray-950/90 border border-gray-800/80 rounded-xl pl-10 pr-4 py-3 text-xs font-mono text-blue-400 placeholder-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-inner"
+                                    autoFocus
+                                />
+                            </div>
+                        </div>
+
+                        {authError && (
+                            <div className="flex items-center space-x-2 text-[11px] text-rose-400 bg-rose-500/5 px-3 py-2.5 rounded-lg border border-rose-500/10 font-mono">
+                                <AlertCircle size={14} className="text-rose-500 flex-shrink-0" />
+                                <span>{authError}</span>
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-indigo-600/10 tracking-wide border-none cursor-pointer"
+                        >
+                            <span>Decrypt Node Channel</span>
+                        </button>
+                    </form>
+
+                    <div className="text-[10px] font-mono !text-gray-600 border-t border-gray-800/40 pt-4">
+                        Session token will be securely cached locally for 3 hours.
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // ─── MAIN PROTECTED DASHBOARD CORE ───
     return (
         /* 🔒 এখানে '!bg-gray-950' এবং '!text-gray-100' দিয়ে লাইট মোডের গ্লোবাল সিএসএসকে ওভাররাইড (Force) করা হয়েছে */
         <div className="min-h-screen !bg-gray-950 !text-gray-100 p-4 md:p-8 font-sans antialiased relative overflow-hidden dark:bg-gray-950 dark:text-gray-100">
@@ -243,7 +356,7 @@ export default function ServerManagementPage() {
 
                                 <button
                                     onClick={() => handleExecuteSQL()}
-                                    className="w-full mt-4 flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-indigo-600/10 tracking-wide border-none"
+                                    className="w-full mt-4 flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-indigo-600/10 tracking-wide border-none cursor-pointer"
                                 >
                                     <Play size={12} fill="currentColor" />
                                     <span>Execute Pipeline</span>
