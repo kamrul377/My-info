@@ -1,9 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Terminal, Database, Trash2, Edit3, EyeOff, Play, Upload, RefreshCw, AlertCircle, CheckCircle2, ChevronRight, LayoutDashboard, DatabaseZap } from "lucide-react";
+import { Terminal, Database, Trash2, Edit3, EyeOff, Play, Upload, RefreshCw, AlertCircle, CheckCircle2, ChevronRight, LayoutDashboard, DatabaseZap, Lock, ShieldCheck, KeyRound, ArrowRight } from "lucide-react";
 
 export default function ServerManagementPage() {
+    // 🔒 অথেনটিকেশন স্টেটম্যানেজমেন্ট
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [passwordInput, setPasswordInput] = useState("");
+    const [authError, setAuthError] = useState("");
+
     const [activeTable, setActiveTable] = useState("posts");
     const [tableData, setTableData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -13,7 +18,29 @@ export default function ServerManagementPage() {
     const [successMessage, setSuccessMessage] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // 🔑 লগইন হ্যান্ডলার ফাংশন
+    const handleLoginSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (passwordInput === "kamrul.com") {
+            setIsAuthenticated(true);
+            setAuthError("");
+            // সিকিউরিটির জন্য সেশন ক্যাশে সেভ করে রাখা যাতে পেজ রিফ্রেশ করলেও বারবার পাসওয়ার্ড না চায়
+            sessionStorage.setItem("cluster_token", "authorized_session_verified");
+        } else {
+            setAuthError("Access Denied: Invalid Security Cipher Key.");
+        }
+    };
+
+    // পেজ লোড হওয়ার সময় আগের সেশন চেক করা
+    useEffect(() => {
+        const token = sessionStorage.getItem("cluster_token");
+        if (token === "authorized_session_verified") {
+            setIsAuthenticated(true);
+        }
+    }, []);
+
     const fetchTableData = async (tableName: string) => {
+        if (!isAuthenticated) return; // লকড থাকলে ডাটা ফেচ হবে না
         setLoading(true);
         try {
             const res = await fetch("/api/admin/sql", {
@@ -33,8 +60,10 @@ export default function ServerManagementPage() {
     };
 
     useEffect(() => {
-        fetchTableData(activeTable);
-    }, [activeTable]);
+        if (isAuthenticated) {
+            fetchTableData(activeTable);
+        }
+    }, [activeTable, isAuthenticated]);
 
     const handleExecuteSQL = async (queryToRun = sqlQuery) => {
         if (!queryToRun.trim()) {
@@ -95,8 +124,76 @@ export default function ServerManagementPage() {
         return Object.keys(data[0]).slice(0, 3);
     };
 
+    // 🛑 যদি ইউজার অথেনটিকেটেড না থাকে, তবে নিচের মেটালিক লগইন স্ক্রিনটি শো করবে
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen !bg-[#070a13] !text-gray-100 flex items-center justify-center p-4 font-sans relative overflow-hidden">
+                {/* ব্যাকগ্রাউন্ড হাইপার গ্লো লাইট */}
+                <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-blue-600/10 rounded-full blur-[140px] pointer-events-none animate-pulse" />
+                <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
+
+                <div className="w-full max-w-md relative z-10">
+                    <form
+                        onSubmit={handleLoginSubmit}
+                        className="!bg-gray-900/40 border border-gray-800/80 rounded-3xl p-8 backdrop-blur-2xl shadow-2xl space-y-6 relative group"
+                    >
+                        {/* টপ মেটাল ব্যাজ আইকন */}
+                        <div className="flex flex-col items-center text-center space-y-3">
+                            <div className="p-4 bg-gradient-to-br from-gray-950 to-gray-900 border border-gray-800 rounded-2xl shadow-inner text-blue-500 group-hover:text-blue-400 transition-colors">
+                                <Lock size={28} className="animate-pulse" />
+                            </div>
+                            <div>
+                                <h1 className="text-lg font-bold tracking-tight text-white flex items-center justify-center gap-1.5">
+                                    Infrastructure Firewall
+                                </h1>
+                                <p className="text-xs !text-gray-400 mt-1 font-mono">NODE ID: portfolio_cluster_root</p>
+                            </div>
+                        </div>
+
+                        <hr className="border-gray-800/60" />
+
+                        {/* ইনপুট পাইপ ফিল্ড */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] uppercase font-bold tracking-widest !text-gray-500 block px-1">
+                                Enter Root Password
+                            </label>
+                            <div className="relative">
+                                <KeyRound size={14} className="absolute left-4 top-1/2 -translate-y-1/2 !text-gray-500" />
+                                <input
+                                    type="password"
+                                    value={passwordInput}
+                                    onChange={(e) => setPasswordInput(e.target.value)}
+                                    placeholder="••••••••••••"
+                                    className="w-full !bg-gray-950/90 border border-gray-800 rounded-xl py-3 pl-11 pr-4 text-sm font-mono text-blue-300 placeholder-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-inner"
+                                    autoFocus
+                                />
+                            </div>
+                        </div>
+
+                        {/* এরর মেসেজ বক্স */}
+                        {authError && (
+                            <div className="flex items-center space-x-2 text-xs text-rose-400 bg-rose-500/5 p-3 rounded-xl border border-rose-500/10 font-mono">
+                                <AlertCircle size={14} className="text-rose-500 flex-shrink-0" />
+                                <span>{authError}</span>
+                            </div>
+                        )}
+
+                        {/* সাবমিট বাটন */}
+                        <button
+                            type="submit"
+                            className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-indigo-600/20 tracking-wide border-none group/btn"
+                        >
+                            <span>Authenticate Session</span>
+                            <ArrowRight size={13} className="group-hover/btn:translate-x-0.5 transition-transform" />
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+
+    // 🔓 ৩. পাসওয়ার্ড ম্যাচ করলে মূল ড্যাশবোর্ড প্যানেল আনলক হবে
     return (
-        /* 🔒 এখানে '!bg-gray-950' এবং '!text-gray-100' দিয়ে লাইট মোডের গ্লোবাল সিএসএসকে ওভাররাইড (Force) করা হয়েছে */
         <div className="min-h-screen !bg-gray-950 !text-gray-100 p-4 md:p-8 font-sans antialiased relative overflow-hidden dark:bg-gray-950 dark:text-gray-100">
 
             {/* 🌌 ব্যাকগ্রাউন্ড হাইপার-গ্লো লাইটিং */}
@@ -112,9 +209,12 @@ export default function ServerManagementPage() {
                             <DatabaseZap className="!text-white" size={24} />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text !text-transparent">
-                                Data Infrastructure Control
-                            </h1>
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text !text-transparent">
+                                    Data Infrastructure Control
+                                </h1>
+                                <ShieldCheck size={16} className="text-emerald-400 mt-0.5" title="Root Session Secured" />
+                            </div>
                             <p className="text-xs !text-gray-400 mt-1 flex items-center gap-2">
                                 Cluster: <span className="!text-gray-300 font-mono font-bold">portfolio_blog</span>
                                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping inline-block" />
@@ -130,8 +230,8 @@ export default function ServerManagementPage() {
                                 key={tab}
                                 onClick={() => setActiveTable(tab)}
                                 className={`px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-200 ${activeTable === tab
-                                        ? "!bg-gray-800 !text-white border border-gray-700/50 shadow-lg"
-                                        : "!text-gray-400 hover:!text-gray-200"
+                                    ? "!bg-gray-800 !text-white border border-gray-700/50 shadow-lg"
+                                    : "!text-gray-400 hover:!text-gray-200"
                                     }`}
                             >
                                 {tab}
