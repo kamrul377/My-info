@@ -193,17 +193,56 @@ export default function BlogPage() {
         }
     };
 
+    // const handleShare = async (postId: number) => {
+    //     if (!session?.user?.name) return;
+    //     await navigator.clipboard.writeText(`${window.location.origin}/blog?post=${postId}`);
+    //     alert("Post link copied!");
+    //     await fetch("/api/blog", {
+    //         method: "POST",
+    //         headers: { "Content-Type": "application/json" },
+    //         body: JSON.stringify({ action: "share", postId, username: session.user.name })
+    //     });
+    //     fetchPosts();
+    // };
+
     const handleShare = async (postId: number) => {
         if (!session?.user?.name) return;
-        await navigator.clipboard.writeText(`${window.location.origin}/blog?post=${postId}`);
-        alert("Post link copied!");
-        await fetch("/api/blog", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "share", postId, username: session.user.name })
-        });
-        fetchPosts();
+
+        const shareUrl = `${window.location.origin}/blog?post=${postId}`;
+        const shareData = {
+            title: "Tech Feed Post",
+            text: `Check out this status broadcast from ${session.user.name}!`,
+            url: shareUrl,
+        };
+
+        // 📱 চেক করা হচ্ছে ব্রাউজারটি Native Share সাপোর্ট করে কি না (মোবাইল ও আধুনিক ব্রাউজার)
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            try {
+                await navigator.share(shareData);
+
+                // শেয়ার সফল হলে ব্যাকএন্ডে কাউন্ট আপডেট করার জন্য
+                await fetch("/api/blog", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "share", postId, username: session.user.name })
+                });
+                fetchPosts();
+            } catch (error) {
+                console.log("Share cancelled or failed:", error);
+            }
+        } else {
+            // 💻 যদি ব্রাউজার Native Share সাপোর্ট না করে (যেমন পুরোনো কিছু পিসি ব্রাউজার)
+            try {
+                await navigator.clipboard.writeText(shareUrl);
+                alert("Native sharing not supported on this browser. Post link copied to clipboard instead!");
+            } catch (err) {
+                console.error("Fallback clipboard error:", err);
+            }
+        }
     };
+
+
+
 
     if (status === "loading") return <div className="min-h-screen flex items-center justify-center dark:bg-slate-950 font-mono text-xs">Authenticating via secure Google gate...</div>;
 
@@ -378,14 +417,53 @@ export default function BlogPage() {
                             )}
 
                             {/* 👍 💬 🔗 অ্যাকশন কন্ট্রোল প্যানেল */}
-                            <div className="flex items-center justify-between border-t border-b border-slate-50 dark:border-slate-800/60 py-1 text-slate-500 dark:text-slate-400 text-xs font-bold">
+                            {/* <div className="flex items-center justify-between border-t border-b border-slate-50 dark:border-slate-800/60 py-1 text-slate-500 dark:text-slate-400 text-xs font-bold">
                                 <button onClick={() => handleToggleLike(post.id)} className={`flex items-center space-x-2 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-1.5 rounded-xl transition ${post.hasLiked ? "text-rose-600 dark:text-rose-500 bg-rose-50/50 dark:bg-rose-950/20" : "hover:text-rose-500"}`}>
                                     <Heart size={15} fill={post.hasLiked ? "currentColor" : "none"} />
                                     <span>{post.likes} Likes</span>
                                 </button>
                                 <div className="flex items-center space-x-2 px-4 py-1.5"><MessageCircle size={15} /><span>{post.comments.length} Comments</span></div>
                                 <button onClick={() => handleShare(post.id)} className="flex items-center space-x-2 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-1.5 rounded-xl transition hover:text-blue-500"><Share2 size={15} /><span>Share</span></button>
+                            </div> */}
+
+                            {/* 👍 💬 🔗 অ্যাকশন কন্ট্রোল প্যানেল */}
+                            <div className="flex items-center justify-between border-t border-b border-slate-50 dark:border-slate-800/60 py-1 text-slate-500 dark:text-slate-400 text-xs font-bold">
+
+                                {/* লাইক বোতাম - ডিজাইন অপরিবর্তিত, মোবাইল টাচ ফিক্সড */}
+                                <button
+                                    onClick={() => handleToggleLike(post.id)}
+                                    className={`flex items-center space-x-2 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-1.5 rounded-xl transition select-none touch-manipulation active:scale-95 ${post.hasLiked ? "text-rose-600 dark:text-rose-500 bg-rose-50/50 dark:bg-rose-950/20" : "hover:text-rose-500"
+                                        }`}
+                                >
+                                    <Heart
+                                        size={15}
+                                        className="pointer-events-none shrink-0"
+                                        fill={post.hasLiked ? "currentColor" : "none"}
+                                    />
+                                    <span className="pointer-events-none">{post.likes} Likes</span>
+                                </button>
+
+                                {/* কমেন্টস কাউন্টার */}
+                                <div className="flex items-center space-x-2 px-4 py-1.5 select-none">
+                                    <MessageCircle size={15} />
+                                    <span>{post.comments.length} Comments</span>
+                                </div>
+
+                                {/* শেয়ার বোতাম */}
+                                <button
+                                    onClick={() => handleShare(post.id)}
+                                    className="flex items-center space-x-2 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-1.5 rounded-xl transition hover:text-blue-500 select-none touch-manipulation active:scale-95"
+                                >
+                                    <Share2 size={15} className="pointer-events-none shrink-0" />
+                                    <span className="pointer-events-none">Share</span>
+                                </button>
+
                             </div>
+
+
+
+
+
 
                             {/* কমেন্ট সেকশন ডিসপ্লে */}
                             <div className="space-y-2">
