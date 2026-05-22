@@ -186,19 +186,19 @@ export async function POST(req: Request) {
         // আপনার ব্যাকএন্ড POST ফাংশনের ভেতরে (body/action চেকের নিচে) এই কেসগুলো যোগ করুন:
 
         // ১. পোস্ট ডিলিট করার লজিক
-        if (action === "delete_post") {
-            const { postId, username } = body;
-            // ডেটাবেস কোয়েরি (Aiven): নিশ্চিত করুন যে পোস্টের লেখক এবং রিকোয়েস্টকারী একই ব্যক্তি
-            await db.query("DELETE FROM posts WHERE id = ? AND author = ?", [postId, username]);
-            return NextResponse.json({ success: true });
-        }
+        // if (action === "delete_post") {
+        //     const { postId, username } = body;
+        //     // ডেটাবেস কোয়েরি (Aiven): নিশ্চিত করুন যে পোস্টের লেখক এবং রিকোয়েস্টকারী একই ব্যক্তি
+        //     await dbPool.query("DELETE FROM posts WHERE id = ? AND author = ?", [postId, username]);
+        //     return NextResponse.json({ success: true });
+        // }
 
-        // ২. পোস্ট এডিট/আপডেট করার লজিক
-        if (action === "edit_post") {
-            const { postId, username, newContent } = body;
-            await db.query("UPDATE posts SET content = ? WHERE id = ? AND author = ?", [newContent, postId, username]);
-            return NextResponse.json({ success: true });
-        }
+        // // ২. পোস্ট এডিট/আপডেট করার লজিক
+        // if (action === "edit_post") {
+        //     const { postId, username, newContent } = body;
+        //     await dbPool.query("UPDATE posts SET content = ? WHERE id = ? AND author = ?", [newContent, postId, username]);
+        //     return NextResponse.json({ success: true });
+        // }
 
         // ❤️ লাইক টগল
         if (action === "toggle_like") {
