@@ -1,103 +1,3 @@
-// // src/app/api/blog/route.ts
-// import { NextResponse } from "next/server";
-// import { dbPool } from "@/lib/db";
-// import { RowDataPacket, ResultSetHeader } from "mysql2";
-
-// // ১. MySQL থেকে সব পোস্ট এবং তাদের কমেন্ট একসাথে তুলে আনা
-// export async function GET() {
-//     try {
-//         // সব পোস্ট কুয়েরি
-//         const [postsRows] = await dbPool.query<RowDataPacket[]>(
-//             "SELECT * FROM posts ORDER BY created_at DESC"
-//         );
-
-//         // প্রতিটি পোস্টের জন্য কমেন্ট তুলে আনা
-//         const postsWithComments = await Promise.all(
-//             postsRows.map(async (post) => {
-//                 const [commentsRows] = await dbPool.query<RowDataPacket[]>(
-//                     "SELECT id, user_name as user, text, created_at FROM comments WHERE post_id = ? ORDER BY created_at ASC",
-//                     [post.id]
-//                 );
-//                 return {
-//                     ...post,
-//                     comments: commentsRows,
-//                 };
-//             })
-//         );
-
-//         return NextResponse.json(postsWithComments);
-//     } catch (error) {
-//         console.error("Database Error:", error);
-//         return NextResponse.json({ error: "Failed to fetch blog data" }, { status: 500 });
-//     }
-// }
-
-// // ২. ফেসবুক-স্টাইল অ্যাকশন হ্যান্ডলার (Create Post, Like, Comment, Share)
-// export async function POST(req: Request) {
-//     try {
-//         const body = await req.json();
-//         const { action, postId, content, secretKey, username, text } = body;
-
-//         // 🔒 শুধুমাত্র আপনার জন্য নতুন পোস্ট ক্রিয়েশন সিকিউরিটি + অটোমেটিক প্রোফাইল পিকচার
-//         if (action === "create_post") {
-//             if (secretKey !== process.env.SECRET_BLOG_KEY) {
-//                 return NextResponse.json({ error: "Unauthorized! Key unmatched." }, { status: 401 });
-//             }
-
-//             // 🖼️ আপনার পার্মানেন্ট প্রোফাইল পিকচার বা অ্যাভাটার লিংক এখানে দিন
-//             // আপনি চাইলে public ফোল্ডারে আপনার ছবি রেখে দিতে পারেন (যেমন: "/images/kamrul.jpg")
-//             const adminAvatar = "./man.png";
-//             const adminName = "Kamrul Islam";
-//             const adminRole = "Network & System Engineer";
-
-//             const [result] = await dbPool.query<ResultSetHeader>(
-//                 "INSERT INTO posts (author, role, avatar, content) VALUES (?, ?, ?, ?)",
-//                 [adminName, adminRole, adminAvatar, content]
-//             );
-
-//             return NextResponse.json({ success: true, postId: result.insertId });
-//         }
-
-//         // ❤️ ভিজিটর লাইক সিস্টেম
-//         if (action === "like") {
-//             await dbPool.query("UPDATE posts SET likes = likes + 1 WHERE id = ?", [postId]);
-//             return NextResponse.json({ success: true });
-//         }
-
-//         // 💬 ভিজিটর কমেন্ট সিস্টেম
-//         if (action === "comment") {
-//             if (!text || !text.trim()) return NextResponse.json({ error: "Text missing" }, { status: 400 });
-//             const finalUser = username && username.trim() ? username : "Anonymous Visitor";
-
-//             await dbPool.query(
-//                 "INSERT INTO comments (post_id, user_name, text) VALUES (?, ?, ?)",
-//                 [postId, finalUser, text]
-//             );
-//             return NextResponse.json({ success: true });
-//         }
-
-//         // 🔗 ভিজিটর শেয়ার ট্র্যাকার
-//         if (action === "share") {
-//             await dbPool.query("UPDATE posts SET shares = shares + 1 WHERE id = ?", [postId]);
-//             return NextResponse.json({ success: true });
-//         }
-
-//         return NextResponse.json({ error: "Action invalid" }, { status: 400 });
-//     } catch (error) {
-//         console.error("API Processing Error:", error);
-//         return NextResponse.json({ error: "Database operation failed" }, { status: 500 });
-//     }
-// }
-
-
-
-
-
-
-
-
-
-
 // src/app/api/blog/route.ts
 import { NextResponse } from "next/server";
 import { dbPool } from "@/lib/db";
@@ -141,6 +41,7 @@ export async function GET(req: Request) {
                     hasLiked: post.has_liked > 0,
                     images: imagesRows.map(img => img.image_url), // অ্যারে অফ ইমেজ ইউআরএল
                     comments: commentsRows,
+                    created_at: post.created_at // 📅 এখানে ডাটাবেজের টাইমস্ট্যাম্প ফ্রন্টএন্ডে পাস করা হলো
                 };
             })
         );
@@ -152,7 +53,7 @@ export async function GET(req: Request) {
     }
 }
 
-// ২. পোস্ট ক্রিয়েট (With Multiple Images), লাইক, কমেন্ট
+// ২. পোস্ট ক্রিয়েট (With Multiple Images), লাইক, কমেন্ট
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -164,7 +65,8 @@ export async function POST(req: Request) {
         if (action === "create_post") {
             if (!content.trim()) return NextResponse.json({ error: "Content empty" }, { status: 400 });
 
-            // প্রথমে 'posts' টেবিলে টেক্সট কন্টেন্ট সেভ করা
+            // প্রথমে 'posts' টেবিলে টেক্সট কন্টেন্ট সেভ করা 
+            // (MySQL ডাটাবেজে p.created_at যদি DEFAULT CURRENT_TIMESTAMP দেওয়া থাকে, তবে অটো সেভ হবে)
             const [result] = await dbPool.query<ResultSetHeader>(
                 "INSERT INTO posts (author_name, avatar, content) VALUES (?, ?, ?)",
                 [username, avatar, content]
@@ -172,7 +74,7 @@ export async function POST(req: Request) {
 
             const newPostId = result.insertId;
 
-            // যদি ইমেজ বা ইমেজের অ্যারে থাকে, তবে লুপ চালিয়ে 'post_images' টেবিলে সেভ করা
+            // যদি ইমেজ বা ইমেজের অ্যারে থাকে, তবে লুপ চালিয়ে 'post_images' টেবিলে সেভ করা
             if (images && Array.isArray(images) && images.length > 0) {
                 for (const imgUrl of images) {
                     if (imgUrl.trim()) {
@@ -182,23 +84,6 @@ export async function POST(req: Request) {
             }
             return NextResponse.json({ success: true });
         }
-
-        // আপনার ব্যাকএন্ড POST ফাংশনের ভেতরে (body/action চেকের নিচে) এই কেসগুলো যোগ করুন:
-
-        // ১. পোস্ট ডিলিট করার লজিক
-        // if (action === "delete_post") {
-        //     const { postId, username } = body;
-        //     // ডেটাবেস কোয়েরি (Aiven): নিশ্চিত করুন যে পোস্টের লেখক এবং রিকোয়েস্টকারী একই ব্যক্তি
-        //     await dbPool.query("DELETE FROM posts WHERE id = ? AND author = ?", [postId, username]);
-        //     return NextResponse.json({ success: true });
-        // }
-
-        // // ২. পোস্ট এডিট/আপডেট করার লজিক
-        // if (action === "edit_post") {
-        //     const { postId, username, newContent } = body;
-        //     await dbPool.query("UPDATE posts SET content = ? WHERE id = ? AND author = ?", [newContent, postId, username]);
-        //     return NextResponse.json({ success: true });
-        // }
 
         // ❤️ লাইক টগল
         if (action === "toggle_like") {
@@ -215,7 +100,7 @@ export async function POST(req: Request) {
             }
         }
 
-        // 💬 কমেন্ট ও 🔗 শেয়ার আগের মতোই থাকবে...
+        // 💬 কমেন্ট ও 🔗 শেয়ার
         if (action === "comment") {
             await dbPool.query("INSERT INTO comments (post_id, user_name, text) VALUES (?, ?, ?)", [postId, username, text]);
             return NextResponse.json({ success: true });

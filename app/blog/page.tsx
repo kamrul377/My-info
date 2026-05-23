@@ -1,8 +1,7 @@
-// src/app/blog/page.tsx
 "use client"
 import { useState, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { Heart, MessageCircle, Share2, Send, ArrowLeft, LogOut, Image as ImageIcon, Plus, Trash2, Loader2, Edit2, Check, X } from "lucide-react";
+import { Heart, MessageCircle, Share2, Send, ArrowLeft, LogOut, Image as ImageIcon, Plus, Trash2, Loader2, Edit2, Check, X, Calendar } from "lucide-react";
 
 interface CommentItem {
     id: number;
@@ -20,6 +19,7 @@ interface PostItem {
     hasLiked: boolean;
     images: string[];
     comments: CommentItem[];
+    created_at?: string; // 📅 Added optional created_at field from backend stream
 }
 
 export default function BlogPage() {
@@ -132,7 +132,6 @@ export default function BlogPage() {
 
             if (res.ok) {
                 setEditingPostId(null);
-                // লোকাল স্টেট ইনস্ট্যান্ট আপডেট করুন রি-রেন্ডার এড়াতে বা ফ্রেশ ডেটা আনুন
                 setPosts(prev => prev.map(p => p.id === postId ? { ...p, content: editingText } : p));
             } else {
                 alert("Could not save the post. Check your backend handler.");
@@ -159,7 +158,6 @@ export default function BlogPage() {
             });
 
             if (res.ok) {
-                // UI থেকে সরাসরি পোস্টটি সরিয়ে দিন ইনস্ট্যান্ট ফিডব্যাকের জন্য
                 setPosts(prev => prev.filter(post => post.id !== postId));
             } else {
                 alert("Failed to delete post. Check permissions.");
@@ -193,18 +191,6 @@ export default function BlogPage() {
         }
     };
 
-    // const handleShare = async (postId: number) => {
-    //     if (!session?.user?.name) return;
-    //     await navigator.clipboard.writeText(`${window.location.origin}/blog?post=${postId}`);
-    //     alert("Post link copied!");
-    //     await fetch("/api/blog", {
-    //         method: "POST",
-    //         headers: { "Content-Type": "application/json" },
-    //         body: JSON.stringify({ action: "share", postId, username: session.user.name })
-    //     });
-    //     fetchPosts();
-    // };
-
     const handleShare = async (postId: number) => {
         if (!session?.user?.name) return;
 
@@ -215,12 +201,10 @@ export default function BlogPage() {
             url: shareUrl,
         };
 
-        // 📱 চেক করা হচ্ছে ব্রাউজারটি Native Share সাপোর্ট করে কি না (মোবাইল ও আধুনিক ব্রাউজার)
         if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
             try {
                 await navigator.share(shareData);
 
-                // শেয়ার সফল হলে ব্যাকএন্ডে কাউন্ট আপডেট করার জন্য
                 await fetch("/api/blog", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -231,7 +215,6 @@ export default function BlogPage() {
                 console.log("Share cancelled or failed:", error);
             }
         } else {
-            // 💻 যদি ব্রাউজার Native Share সাপোর্ট না করে (যেমন পুরোনো কিছু পিসি ব্রাউজার)
             try {
                 await navigator.clipboard.writeText(shareUrl);
                 alert("Native sharing not supported on this browser. Post link copied to clipboard instead!");
@@ -241,8 +224,23 @@ export default function BlogPage() {
         }
     };
 
-
-
+    // Helper to safety parse dates avoiding server/client mismatch drops
+    const formatPostDate = (dateString?: string) => {
+        if (!dateString) return "Just now";
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+            }) + " • " + date.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        } catch (e) {
+            return "Recent Broadcast";
+        }
+    };
 
     if (status === "loading") return <div className="min-h-screen flex items-center justify-center dark:bg-slate-950 font-mono text-xs">Authenticating via secure Google gate...</div>;
 
@@ -362,7 +360,11 @@ export default function BlogPage() {
                                     <img src={post.avatar} alt="" className="h-9 w-9 rounded-full object-cover shrink-0" />
                                     <div>
                                         <h4 className="text-xs font-bold text-slate-900 dark:text-white">{post.author}</h4>
-                                        <p className="text-[9px] font-mono text-slate-400">Verified User</p>
+                                        {/* 📅 Post Creation Timestamp Added Here */}
+                                        <p className="text-[9px] font-mono text-slate-400 flex items-center gap-1 mt-0.5">
+                                            <Calendar size={10} className="text-slate-400/80 shrink-0" />
+                                            <span>{formatPostDate(post.created_at)}</span>
+                                        </p>
                                     </div>
                                 </div>
 
@@ -417,24 +419,14 @@ export default function BlogPage() {
                             )}
 
                             {/* 👍 💬 🔗 অ্যাকশন কন্ট্রোল প্যানেল */}
-                            {/* <div className="flex items-center justify-between border-t border-b border-slate-50 dark:border-slate-800/60 py-1 text-slate-500 dark:text-slate-400 text-xs font-bold">
-                                <button onClick={() => handleToggleLike(post.id)} className={`flex items-center space-x-2 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-1.5 rounded-xl transition ${post.hasLiked ? "text-rose-600 dark:text-rose-500 bg-rose-50/50 dark:bg-rose-950/20" : "hover:text-rose-500"}`}>
-                                    <Heart size={15} fill={post.hasLiked ? "currentColor" : "none"} />
-                                    <span>{post.likes} Likes</span>
-                                </button>
-                                <div className="flex items-center space-x-2 px-4 py-1.5"><MessageCircle size={15} /><span>{post.comments.length} Comments</span></div>
-                                <button onClick={() => handleShare(post.id)} className="flex items-center space-x-2 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-1.5 rounded-xl transition hover:text-blue-500"><Share2 size={15} /><span>Share</span></button>
-                            </div> */}
-
-                            {/* 👍 💬 🔗 অ্যাকশন কন্ট্রোল প্যানেল */}
                             <div className="flex items-center justify-between border-t border-b border-slate-50 dark:border-slate-800/60 py-1 text-slate-500 dark:text-slate-400 text-xs font-bold">
 
-                                {/* লাইক বোতাম - ডিজাইন অপরিবর্তিত, মোবাইল টাচ ফিক্সড */}
+                                {/* লাইক বোতাম */}
                                 <button
                                     onClick={() => handleToggleLike(post.id)}
                                     className={`flex items-center space-x-2 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-1.5 rounded-xl transition select-none touch-manipulation active:scale-95 ${post.hasLiked ? "text-rose-600 dark:text-rose-500 bg-rose-50/50 dark:bg-rose-950/20" : "hover:text-rose-500"
                                         }`}
-                                >
+                                    align-items="center" >
                                     <Heart
                                         size={15}
                                         className="pointer-events-none shrink-0"
@@ -449,7 +441,7 @@ export default function BlogPage() {
                                     <span>{post.comments.length} Comments</span>
                                 </div>
 
-                                {/* শেয়ার বোতাম */}
+                                {/* শেয়ার বোতাম */}
                                 <button
                                     onClick={() => handleShare(post.id)}
                                     className="flex items-center space-x-2 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-1.5 rounded-xl transition hover:text-blue-500 select-none touch-manipulation active:scale-95"
@@ -459,11 +451,6 @@ export default function BlogPage() {
                                 </button>
 
                             </div>
-
-
-
-
-
 
                             {/* কমেন্ট সেকশন ডিসপ্লে */}
                             <div className="space-y-2">
