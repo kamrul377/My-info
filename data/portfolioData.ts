@@ -3,7 +3,7 @@ export const personalInfo = {
     name: "Kamrul Islam",
     role: "System Engineer & Full-Stack Developer",
     avatar: "/my-profile-pic.jpg",
-    bio: "A multi-disciplinary Core Network Specialist running infrastructure operations at First n Fast IT Ltd. Bridging the gap between hardware engineering and software systems by building enterprise MERN solutions, writing network automation engines, and deeply exploring cybersecurity analytics.",
+    bio: "A multi-disciplinary Core Network Specialist running infrastructure operations at First n Fast IT Ltd. Bridging the gap between hardware engineering and software systems by building enterprise WEB solutions, writing network automation engines, and deeply exploring cybersecurity analytics.",
 
     skillCategories: [
         {

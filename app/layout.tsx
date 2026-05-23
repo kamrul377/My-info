@@ -20,7 +20,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: "Kamrul Islam | System Engineer & Full-Stack Developer",
-  description: "Core Network Specialist & Full-Stack MERN Developer Portfolio highlighting carrier-grade routing, security, and network automation case studies.",
+  description: "Core Network Specialist & Full-Stack Web Developer Portfolio highlighting carrier-grade routing, security, and network automation case studies.",
   keywords: ["Kamrul Islam", "Kamrul info", "System Engineer", "Network Engineer", "Portfolio"],
   verification: {
     google: "q03IFXAPSZ1Nm6DLWCk8-jRYLjZuooEJvzgtYsLAoW4",
